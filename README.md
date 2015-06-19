@@ -6,3 +6,6 @@ WordPress plugin for me to log stats on the baconipsum.com web site from the [An
 ### v1.0.0 June 19, 2015 ###
 - Initial release
 
+## Roadmap
+
+- Add API endpoint to generate stats from the logs
