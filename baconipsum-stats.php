@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Bacon Ipsum Stats
-Description: Logs stats from the Any Ipsumn plugin
+Description: Logs stats from the Any Ipsum plugin
 Version: 1.0
 Author: Pete Nelson <a href="https://twitter.com/GunGeekATX">(@GunGeekATX)</a>
 */
