@@ -88,6 +88,11 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
+		public function min_max_timestamps() {
+			return $this->query_table( 'MIN( added ) AS min_timestamp, MAX( added ) AS max_timestamp', $where = '', $group_by = '', $type = 'row' );
+		}
+
+
 		private function logging_table_name() {
 			global $wpdb;
 			return $wpdb->prefix . 'anyipsum_log';
