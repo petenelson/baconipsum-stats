@@ -11,6 +11,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 
 		private $bi_stats              = null;
 
+
 		public function register_routes() {
 
 			register_rest_route( 'baconipsum', '/stats', array(
@@ -28,8 +29,8 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 				),
 			) );
 
-
 		}
+
 
 		private function stats() {
 			if ( empy( $this->bi_stats ) ) {
@@ -40,14 +41,8 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 
 
 		public function get_stats( WP_REST_Request $request ) {
-
-			$data = new stdClass();
-			$data->from = $request['from'];
-			$data->to = $request['to'];
-			$data->hello = 'world';
-
+			$data = $this->stats->get_stats( $from = $request['from'], $to = $request->to );
 			return rest_ensure_response( $data );
-
 		}
 
 
@@ -63,6 +58,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 			}
 
 		}
+
 
 
 	} // end class

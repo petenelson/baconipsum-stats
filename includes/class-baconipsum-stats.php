@@ -88,6 +88,48 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
+		public function get_stats( $args ) {
+
+			global $wpdb;
+
+			$args = wp_parse_args( $args, array(
+				'from'       => 0,
+				'to'         => 0,
+				'source'     => '',
+				'type'       => '',
+			 ) );
+
+			// sanitize timestamps
+			$timestamps = $this->min_max_timestamps();
+			if ( $args['from'] < $timestamps->min_timestamp ) {
+				$args['from'] = $timestamps->min_timestamp;
+			}
+
+			if ( $args['to'] < $timestamps->max_timestamp ) {
+				$args['to'] = $timestamps->max_timestamp;
+			}
+
+			$s = new stdClass();
+			$s->from     = $args['from'];
+			$s->to       = $to;
+
+			$where =  $wpdb->prepare( 'added >= %d and added <= %d', $args['from'], $args['to'] );
+
+			// total counts
+			//$counts = $this->query_table( $select = 'count(*) as counts', $where  )
+
+			// counts by source
+
+			// counts by type
+
+			// counts by paragraphs
+
+			// counts by sentences
+
+		}
+
+
+
 		public function min_max_timestamps() {
 			$timestamps = $this->query_table( 'MIN( added ) AS min_timestamp, MAX( added ) AS max_timestamp', $where = '', $group_by = '', $type = 'row' );
 			$timestamps->min_timestamp = absint( $timestamps->min_timestamp );
