@@ -26,7 +26,18 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 						'sanitize_callback' => array( $this, 'validate_timestamp' ),
 						'default'           => current_time( 'timestamp' ),
 					),
+					'source'      => array(
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'type'        => array(
+						'sanitize_callback' => 'sanitize_key',
+					),
 				),
+			) );
+
+			register_rest_route( 'baconipsum', '/params', array(
+				'methods'         => WP_REST_Server::READABLE,
+				'callback'        => array( $this, 'get_params' ),
 			) );
 
 		}
@@ -48,7 +59,18 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 
 
 		public function get_stats( WP_REST_Request $request ) {
-			$data = $this->stats->get_stats( $from = $request['from'], $to = $request->to );
+			$data = $this->stats->get_stats( array(
+				'from' => $request['from'],
+				'to' => $request['to'],
+				'source' => $request['source'],
+				'type' => $request['type'],
+			) );
+			return rest_ensure_response( $data );
+		}
+
+
+		public function get_params( WP_REST_Request $request ) {
+			$data = $this->stats->get_params();
 			return rest_ensure_response( $data );
 		}
 
@@ -58,7 +80,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 			$timestamp = absint( $timestamp );
 			$timestamps = $this->stats->min_max_timestamps();
 
-			if ( $timestamp < $timestamps->min_timestamp || $timestamp > $timestamps->max_timestamps ) {
+			if ( $timestamp < $timestamps->min_timestamp || $timestamp > $timestamps->max_timestamp ) {
 				return 0;
 			} else {
 				return $timestamp;

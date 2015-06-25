@@ -9,6 +9,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		protected static $version      = '2015-06-19-04';
 		protected static $plugin_name  = 'baconipsum-stats';
 
+		private $_queries = array();
 
 		public function plugins_loaded() {
 
@@ -63,6 +64,12 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 			global $wpdb;
 
+			$params = $this->get_params();
+			// don't log invalid data
+			if ( ! in_array( $args['source'], $params->sources ) || ! in_array( $args['type'], $params->types ) ) {
+				return;
+			}
+
 			$wpdb->insert( $this->logging_table_name(),
 				array(
 					'added' => current_time( 'timestamp' ),
@@ -72,7 +79,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 					'start_with_lorem' => true === $args['start-with-lorem'] ? 1 : 0,
 					'number_of_paragraphs' => $args['number-of-paragraphs'] ,
 					'number_of_sentences' => $args['number-of-sentences'] ,
-					),
+				),
 				array(
 					'%d',
 					'%s',
@@ -81,10 +88,18 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 					'%d',
 					'%d',
 					'%d',
-					)
+				)
 			);
 
 
+		}
+
+
+		public function get_params() {
+			$p            = new stdClass();
+			$p->sources   = array( 'web', 'api' );
+			$p->types     = array( 'all-meat', 'meat-and-filler' );
+			return $p;
 		}
 
 
@@ -93,10 +108,11 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			global $wpdb;
 
 			$args = wp_parse_args( $args, array(
-				'from'       => 0,
-				'to'         => 0,
-				'source'     => '',
-				'type'       => '',
+				'from'             => 0,
+				'to'               => 0,
+				'source'           => '',
+				'type'             => '',
+				'include_queries'  => false,
 			 ) );
 
 			// sanitize timestamps
@@ -105,38 +121,84 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				$args['from'] = $timestamps->min_timestamp;
 			}
 
-			if ( $args['to'] < $timestamps->max_timestamp ) {
+			if ( $args['to'] > $timestamps->max_timestamp ) {
 				$args['to'] = $timestamps->max_timestamp;
 			}
 
 			$s = new stdClass();
+			$s->args          = $args;
 			$s->generated     = current_time( 'timestamp' );
 			$s->from          = $args['from'];
 			$s->to            = $args['to'];
+			$s->timestamps    = $timestamps;
 
 			$where =  $wpdb->prepare( 'added >= %d and added <= %d', $args['from'], $args['to'] );
 
+			if ( ! empty( $args['source'] ) ) {
+				$where .= $wpdb->prepare( " and source = '%s'", $args['source'] );
+			}
+
+			if ( ! empty( $args['type'] ) ) {
+				$where .= $wpdb->prepare( " and type = '%s'", $args['type'] );
+			}
+
+			$params = $this->get_params();
+
+			// filter where to valid types and sources
+			$where .= " and source in (" . implode( ',', array_map( array( $this, 'add_single_quotes' ), $params->sources ) ) . ')';
+			$where .= " and type in (" . implode( ',', array_map( array( $this, 'add_single_quotes' ), $params->types ) ) . ')';
+
 			// total counts
-			//$counts = $this->query_table( $select = 'count(*) as counts', $where  )
+			$s->count = absint( $this->query_table( $select = 'count(*)', $where, $group_by = '', $type = 'var' ) );
 
 			// counts by source
+			$s->sources = $this->array_a_to_kv( $this->query_table( $select = 'source, count(*) as `count`', $where, $group_by = 'source', $type = 'results', $output = OBJECT_K ) );
 
 			// counts by type
+			$s->type = $this->array_a_to_kv( $this->query_table( $select = 'type, count(*) as `count`', $where, $group_by = 'type', $type = 'results', $output = OBJECT_K ) );
 
 			// counts by paragraphs
+			$s->start_with_lorem = $this->array_a_to_kv( $this->query_table( $select = 'start_with_lorem, count(*) as `count`', $where, $group_by = 'start_with_lorem', $type = 'results', $output = OBJECT_K ) );
+
+			$s->start_with_lorem['Yes'] = absint( $s->start_with_lorem[0] );
+			$s->start_with_lorem['No'] = absint( $s->start_with_lorem[1] );
+
+			unset( $s->start_with_lorem[0] );
+			unset( $s->start_with_lorem[1] );
+
+			// counts by paragraphs
+			$s->paragraphs = $this->array_a_to_kv( $this->query_table( $select = 'number_of_paragraphs, count(*) as `count`', $where, $group_by = 'number_of_paragraphs', $type = 'results', $output = OBJECT_K ) );
 
 			// counts by sentences
+
+			$s->queries = $this->_queries;
 
 			return $s;
 
 		}
 
+		private function array_a_to_kv( $results ) {
+			$a = array();
+			foreach ( $results as $key => $value ) {
+				$a[ strval( $key ) ] = absint( $value->count );
+			}
+			return $a;
+		}
+
+
+		private function get_distinct( $column ) {
+			return $this->query_table( 'distinct(' . $column . ')', $where = '', $group_by = '', $type = 'col' );
+		}
 
 
 		public function min_max_timestamps() {
+			if ( ! empty( $this->_timestamps ) ) {
+				return $this->_timestamps;
+			}
 			$timestamps = $this->query_table( 'MIN( added ) AS min_timestamp, MAX( added ) AS max_timestamp', $where = '', $group_by = '', $type = 'row' );
 			$timestamps->min_timestamp = absint( $timestamps->min_timestamp );
 			$timestamps->max_timestamp = absint( $timestamps->max_timestamp );
+			$this->_timestamps = $timestamps;
 			return $timestamps;
 		}
 
@@ -147,7 +209,8 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
-		private function query_table( $select, $where, $group_by = '', $type = 'results' ) {
+		private function query_table( $select, $where, $group_by = '', $type = 'results', $output = OBJECT ) {
+
 			global $wpdb;
 			$table_name = $this->logging_table_name();
 
@@ -155,11 +218,19 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				$where = '1';
 			}
 
+			if ( ! empty( $group_by ) ) {
+				$group_by = 'group by ' . $group_by;
+			}
+
 			$query = 'select ' . $select . " from $table_name where " . $where . " " . $group_by;
 
 			switch ( $type ) {
 				case 'row':
-					$results = $wpdb->get_row( $query );
+					$results = $wpdb->get_row( $query, $output );
+					break;
+
+				case 'col':
+					$results = $wpdb->get_col( $query );
 					break;
 
 				case 'var':
@@ -167,12 +238,19 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 					break;
 
 				default:
-					$results = $wpdb->get_results( $query );
+				var_dump($output);
+					$results = $wpdb->get_results( $query, $output );
 					break;
 			}
 
+			$this->_queries[] = $query;
+
 			return $results;
 
+		}
+
+		private function add_single_quotes( $value ) {
+			return "'" . $value . "'";
 		}
 
 
