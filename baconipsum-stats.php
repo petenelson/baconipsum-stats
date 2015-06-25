@@ -19,5 +19,6 @@ if ( class_exists( 'BaconIpsum_Stats' ) ) {
 }
 
 if ( class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
-	add_action( 'rest_api_init', 'BaconIpsum_Stats_API_Controller::register_routes' );
+	$bis_api_controller = new BaconIpsum_Stats_API_Controller();
+	add_action( 'rest_api_init', array( $bis_api_controller, 'register_routes' ) );
 }
