@@ -56,7 +56,6 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 			}
 
-
 		}
 
 
@@ -170,12 +169,14 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			$s->paragraphs = $this->array_a_to_kv( $this->query_table( $select = 'number_of_paragraphs, count(*) as `count`', $where, $group_by = 'number_of_paragraphs', $type = 'results', $output = OBJECT_K ) );
 
 			// counts by sentences
-
-			$s->queries = $this->_queries;
+			if ( $args['include_queries'] ) {
+				$s->queries = $this->_queries;
+			}
 
 			return $s;
 
 		}
+
 
 		private function array_a_to_kv( $results ) {
 			$a = array();
@@ -248,6 +249,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			return $results;
 
 		}
+
 
 		private function add_single_quotes( $value ) {
 			return "'" . $value . "'";
