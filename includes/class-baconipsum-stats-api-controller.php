@@ -19,11 +19,11 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 				'callback'        => array( $this, 'get_stats' ),
 				'args'            => array(
 					'from'        => array(
-						'sanitize_callback'  => array( $this, 'validate_timestamp' ),
+						'sanitize_callback'  => array( $this, 'to_timestamp' ),
 						'default'            => current_time( 'timestamp' ) - ( DAYS_IN_SECONDS * 30 ),
 					),
 					'to'          => array(
-						'sanitize_callback' => array( $this, 'validate_timestamp' ),
+						'sanitize_callback' => array( $this, 'to_timestamp' ),
 						'default'           => current_time( 'timestamp' ),
 					),
 					'source'      => array(
@@ -65,6 +65,33 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 				'source' => $request['source'],
 				'type' => $request['type'],
 			) );
+
+			$data->chart_data = new stdClass();
+
+			$data->chart_data->sources = array();
+			$data->chart_data->sources[] = array( 'Source', 'Count');
+			foreach ($data->sources as $key => $value) {
+				$data->chart_data->sources[] = array( $key, $value );
+			}
+
+			$data->chart_data->types = array();
+			$data->chart_data->types[] = array( 'Type', 'Count');
+			foreach ($data->types as $key => $value) {
+				$data->chart_data->types[] = array( $key, $value );
+			}
+
+			$data->chart_data->start_with_lorem = array();
+			$data->chart_data->start_with_lorem[] = array( 'Start With Lorem', 'Count');
+			foreach ($data->start_with_lorem as $key => $value) {
+				$data->chart_data->start_with_lorem[] = array( strval( $key ), $value );
+			}
+
+			$data->chart_data->paragraphs = array();
+			$data->chart_data->paragraphs[] = array( 'Number of Paragraphs', 'Count');
+			foreach ($data->paragraphs as $key => $value) {
+				$data->chart_data->paragraphs[] = array( strval( $key ), $value );
+			}
+
 			return rest_ensure_response( $data );
 		}
 
@@ -72,6 +99,11 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 		public function get_params( WP_REST_Request $request ) {
 			$data = $this->stats->get_params();
 			return rest_ensure_response( $data );
+		}
+
+
+		public function to_timestamp( $date ) {
+			return $this->validate_timestamp( strtotime( $date ) );
 		}
 
 

@@ -120,7 +120,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				$args['from'] = $timestamps->min_timestamp;
 			}
 
-			if ( $args['to'] > $timestamps->max_timestamp ) {
+			if ( $args['to'] > $timestamps->max_timestamp || $args['to'] < $timestamps->min_timestamp ) {
 				$args['to'] = $timestamps->max_timestamp;
 			}
 
@@ -154,7 +154,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			$s->sources = $this->array_a_to_kv( $this->query_table( $select = 'source, count(*) as `count`', $where, $group_by = 'source', $type = 'results', $output = OBJECT_K ) );
 
 			// counts by type
-			$s->type = $this->array_a_to_kv( $this->query_table( $select = 'type, count(*) as `count`', $where, $group_by = 'type', $type = 'results', $output = OBJECT_K ) );
+			$s->types = $this->array_a_to_kv( $this->query_table( $select = 'type, count(*) as `count`', $where, $group_by = 'type', $type = 'results', $output = OBJECT_K ) );
 
 			// counts by paragraphs
 			$s->start_with_lorem = $this->array_a_to_kv( $this->query_table( $select = 'start_with_lorem, count(*) as `count`', $where, $group_by = 'start_with_lorem', $type = 'results', $output = OBJECT_K ) );
@@ -239,7 +239,6 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 					break;
 
 				default:
-				var_dump($output);
 					$results = $wpdb->get_results( $query, $output );
 					break;
 			}
