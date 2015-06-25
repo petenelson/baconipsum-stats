@@ -9,7 +9,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 		protected static $version      = '2015-06-24-01';
 		protected static $plugin_name  = 'baconipsum-stats-api';
 
-		private $bi_stats              = null;
+		private $_stats                = null;
 
 
 		public function register_routes() {
@@ -32,12 +32,19 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 		}
 
 
-		private function stats() {
-			if ( empy( $this->bi_stats ) ) {
-				$this->bi_stats = new BaconIpsum_Stats();
+		public function __get( $name ) {
+
+			if ( 'stats' === $name && empty( $this->_stats ) ) {
+				$this->_stats = new BaconIpsum_Stats();
 			}
-			return $this->bi_stats;
+
+			if ( property_exists( $this, '_' . $name ) ) {
+				$name = '_' . $name;
+				return $this->$name;
+			}
+
 		}
+
 
 
 		public function get_stats( WP_REST_Request $request ) {

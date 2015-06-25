@@ -110,8 +110,9 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			}
 
 			$s = new stdClass();
-			$s->from     = $args['from'];
-			$s->to       = $to;
+			$s->generated     = current_time( 'timestamp' );
+			$s->from          = $args['from'];
+			$s->to            = $args['to'];
 
 			$where =  $wpdb->prepare( 'added >= %d and added <= %d', $args['from'], $args['to'] );
 
@@ -126,6 +127,8 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 			// counts by sentences
 
+			return $s;
+
 		}
 
 
@@ -134,7 +137,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			$timestamps = $this->query_table( 'MIN( added ) AS min_timestamp, MAX( added ) AS max_timestamp', $where = '', $group_by = '', $type = 'row' );
 			$timestamps->min_timestamp = absint( $timestamps->min_timestamp );
 			$timestamps->max_timestamp = absint( $timestamps->max_timestamp );
-			return $ts;
+			return $timestamps;
 		}
 
 
@@ -148,7 +151,11 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			global $wpdb;
 			$table_name = $this->logging_table_name();
 
-			$query = $select . " from $table_name where " . $where . " " . $group_by;
+			if ( empty( $where ) ) {
+				$where = '1';
+			}
+
+			$query = 'select ' . $select . " from $table_name where " . $where . " " . $group_by;
 
 			switch ( $type ) {
 				case 'row':
