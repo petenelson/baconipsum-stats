@@ -9,6 +9,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 		protected static $version      = '2015-06-24-01';
 		protected static $plugin_name  = 'baconipsum-stats-api';
 
+		private $bi_stats              = null;
 
 		public function register_routes() {
 
@@ -30,6 +31,13 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 
 		}
 
+		private function stats() {
+			if ( empy( $this->bi_stats ) ) {
+				$this->bi_stats = new BaconIpsum_Stats();
+			}
+			return $this->bi_stats;
+		}
+
 
 		public function get_stats( WP_REST_Request $request ) {
 
@@ -44,19 +52,20 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 
 
 		public function validate_timestamp( $timestamp ) {
+
 			$timestamp = absint( $timestamp );
-			// TODO add range checking here
-			return $timestamp;
+			$timestamps = $this->stats->min_max_timestamps();
+
+			if ( $timestamp < $timestamps->min_timestamp || $timestamp > $timestamps->max_timestamps ) {
+				return 0;
+			} else {
+				return $timestamp;
+			}
+
 		}
 
-		private function get_timestamp_range( ) {
 
-
-		}
-
-
-
-	}
+	} // end class
 
 }
 

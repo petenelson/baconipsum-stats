@@ -89,7 +89,10 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 
 		public function min_max_timestamps() {
-			return $this->query_table( 'MIN( added ) AS min_timestamp, MAX( added ) AS max_timestamp', $where = '', $group_by = '', $type = 'row' );
+			$timestamps = $this->query_table( 'MIN( added ) AS min_timestamp, MAX( added ) AS max_timestamp', $where = '', $group_by = '', $type = 'row' );
+			$timestamps->min_timestamp = absint( $timestamps->min_timestamp );
+			$timestamps->max_timestamp = absint( $timestamps->max_timestamp );
+			return $ts;
 		}
 
 
