@@ -2,7 +2,7 @@
 /*
 Plugin Name: Bacon Ipsum Stats
 Description: Logs stats from the Any Ipsum plugin
-Version: 1.0.0
+Version: 1.1.0
 Author: Pete Nelson <a href="https://twitter.com/GunGeekATX">(@GunGeekATX)</a>
 */
 
@@ -15,8 +15,10 @@ foreach ( $includes as $include ) {
 }
 
 if ( class_exists( 'BaconIpsum_Stats' ) ) {
-	add_action( 'plugins_loaded', 'BaconIpsum_Stats::plugins_loaded' );
+	$bis = new BaconIpsum_Stats();
+	add_action( 'plugins_loaded', array( $bis, 'plugins_loaded' ) );
 }
+
 
 if ( class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 	$bis_api_controller = new BaconIpsum_Stats_API_Controller();

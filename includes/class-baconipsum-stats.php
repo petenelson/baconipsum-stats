@@ -6,28 +6,19 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 	class BaconIpsum_Stats {
 
-		protected static $instance     = null;
 		protected static $version      = '2015-06-19-04';
 		protected static $plugin_name  = 'baconipsum-stats';
 
-		public static function instance() {
-			if ( is_null( self::$instance ) ) {
-				self::$instance = new BaconIpsum_Stats();
-			}
 
-			return self::$instance;
-		}
+		public function plugins_loaded() {
 
-
-		public static function plugins_loaded() {
-
-			add_action( 'admin_init', 'BaconIpsum_Stats::create_tables' );
-			add_action( 'anyipsum-filler-generated', 'BaconIpsum_Stats::log_anyipsum_generated' );
+			add_action( 'admin_init', array( $this, 'create_tables' ) );
+			add_action( 'anyipsum-filler-generated', array( $this, 'log_anyipsum_generated' ) );
 
 		}
 
 
-		public static function create_tables() {
+		public function create_tables() {
 
 			if ( self::$version !== get_site_option( self::$plugin_name . '-version' ) ) {
 
@@ -41,7 +32,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 				global $wpdb;
 
-				$table_name = self::logging_table_name();
+				$table_name = $this->logging_table_name();
 				$charset_collate = $wpdb->get_charset_collate();
 
 				$sql = "CREATE TABLE $table_name (
@@ -68,11 +59,11 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
-		public static function log_anyipsum_generated( $args ) {
+		public function log_anyipsum_generated( $args ) {
 
 			global $wpdb;
 
-			$wpdb->insert( self::logging_table_name(),
+			$wpdb->insert( $this->logging_table_name(),
 				array(
 					'added' => current_time( 'timestamp' ),
 					'source' => $args['source'],
@@ -97,9 +88,34 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
-		private static function logging_table_name() {
+		private function logging_table_name() {
 			global $wpdb;
 			return $wpdb->prefix . 'anyipsum_log';
+		}
+
+
+		private query_table( $select, $where, $group_by = '', $type = 'results' ) {
+			global $wpdb;
+			$table_name = $this->logging_table_name();
+
+			$query = $select . " from $table_name where " . $where . " " . $group_by;
+
+			switch ( $type ) {
+				case 'row':
+					$results = $wpdb->get_row( $query );
+					break;
+
+				case 'var':
+					$results = $wpdb->get_var( $query );
+					break;
+
+				default:
+					$results = $wpdb->get_results( $query );
+					break;
+			}
+
+			return $results;
+
 		}
 
 

@@ -49,7 +49,10 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 			return $timestamp;
 		}
 
+		private function get_timestamp_range( ) {
 
+
+		}
 
 
 
