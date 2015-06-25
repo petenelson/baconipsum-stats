@@ -2,7 +2,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) die( 'restricted access' );
 
-if ( !class_exists( 'BaconIpsum_Stats_API' ) ) {
+if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 
 	class BaconIpsum_Stats_API_Controller  {
 
@@ -57,6 +57,9 @@ if ( !class_exists( 'BaconIpsum_Stats_API' ) ) {
 			// TODO add range checking here
 			return $timestamp;
 		}
+
+
+
 
 
 	}
