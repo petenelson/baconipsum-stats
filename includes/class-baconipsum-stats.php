@@ -94,7 +94,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
-		private query_table( $select, $where, $group_by = '', $type = 'results' ) {
+		private function query_table( $select, $where, $group_by = '', $type = 'results' ) {
 			global $wpdb;
 			$table_name = $this->logging_table_name();
 
