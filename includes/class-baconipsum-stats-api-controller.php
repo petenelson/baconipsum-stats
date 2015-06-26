@@ -15,7 +15,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 		public function register_routes() {
 
 			register_rest_route( 'baconipsum', '/stats', array(
-				'methods'         => WP_REST_Server::METHOD_POST,
+				'methods'         => array( WP_REST_Server::METHOD_GET, WP_REST_Server::METHOD_POST ),
 				'callback'        => array( $this, 'get_stats' ),
 				'args'            => array(
 					'from'        => array(
