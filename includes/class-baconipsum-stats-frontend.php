@@ -47,6 +47,7 @@ if ( !class_exists( 'BaconIpsum_Stats_Frontend' ) ) {
 						<input type="submit" value="Go" />
 						<img class="ajax-spinner" style="display: none;" src="<?php echo plugin_dir_url(  dirname( __FILE__ ) ) ?>public/ajax-spinner.gif" />
 
+						<p class="chart chart-total"></p>
 
 						<div id="pie-source" class="chart" style="width: 100%; height: 300px; display: none;"></div>
 						<div id="pie-type" class="chart" style="width: 100%; height: 300px; display: none;"></div>
@@ -97,6 +98,8 @@ if ( !class_exists( 'BaconIpsum_Stats_Frontend' ) ) {
 
 						jQuery('.baconipsum-stats .chart').show();
 						jQuery('.baconipsum-stats .ajax-spinner').hide();
+
+						jQuery('.baconipsum-stats .chart-total').html( 'Total: ' + response.count_formatted );
 
 						baconIpsumPopulateChart( response.chart_data.types, 'Types', 'pie-type' );
 						baconIpsumPopulateChart( response.chart_data.sources, 'Source', 'pie-source' );

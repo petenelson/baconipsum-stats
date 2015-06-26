@@ -67,6 +67,8 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 				'include_queries' => true,
 			) );
 
+			$data->count_formatted = number_format( $data->count );
+
 			$data->chart_data = new stdClass();
 
 			$data->chart_data->sources = array();
