@@ -64,7 +64,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 				'to' => $request['to'],
 				'source' => $request['source'],
 				'type' => $request['type'],
-				'include_queries' => true,
+				'include_queries' => false,
 			) );
 
 			$data->count_formatted = number_format( $data->count );
