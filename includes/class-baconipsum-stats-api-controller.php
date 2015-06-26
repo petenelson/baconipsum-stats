@@ -64,6 +64,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 				'to' => $request['to'],
 				'source' => $request['source'],
 				'type' => $request['type'],
+				'include_queries' => true,
 			) );
 
 			$data->chart_data = new stdClass();
@@ -92,6 +93,12 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 				$data->chart_data->paragraphs[] = array( strval( $key ), $value );
 			}
 
+			$data->chart_data->format = array();
+			$data->chart_data->format[] = array( 'Format', 'Count');
+			foreach ($data->format as $key => $value) {
+				$data->chart_data->format[] = array( strval( $key ), $value );
+			}
+
 			return rest_ensure_response( $data );
 		}
 
@@ -108,16 +115,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 
 
 		public function validate_timestamp( $timestamp ) {
-
-			$timestamp = absint( $timestamp );
-			$timestamps = $this->stats->min_max_timestamps();
-
-			if ( $timestamp < $timestamps->min_timestamp || $timestamp > $timestamps->max_timestamp ) {
-				return 0;
-			} else {
-				return $timestamp;
-			}
-
+			return absint( $timestamp );
 		}
 
 

@@ -115,20 +115,22 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			 ) );
 
 			// sanitize timestamps
-			$timestamps = $this->min_max_timestamps();
-			if ( $args['from'] < $timestamps->min_timestamp ) {
-				$args['from'] = $timestamps->min_timestamp;
+			if ( false ) {
+				$timestamps = $this->min_max_timestamps();
+				if ( $args['from'] < $timestamps->min_timestamp ) {
+					$args['from'] = $timestamps->min_timestamp;
+				}
+
+				if ( $args['to'] > $timestamps->max_timestamp || $args['to'] < $timestamps->min_timestamp ) {
+					//$args['to'] = $timestamps->max_timestamp;
+				}
 			}
 
-			if ( $args['to'] > $timestamps->max_timestamp || $args['to'] < $timestamps->min_timestamp ) {
-				$args['to'] = $timestamps->max_timestamp;
-			}
+			$args['to'] = $args['to'] + DAY_IN_SECONDS  - 1;
 
 			$s = new stdClass();
 			$s->args          = $args;
 			$s->generated     = current_time( 'timestamp' );
-			$s->from          = $args['from'];
-			$s->to            = $args['to'];
 			$s->timestamps    = $timestamps;
 
 			$where =  $wpdb->prepare( 'added >= %d and added <= %d', $args['from'], $args['to'] );
@@ -155,6 +157,9 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 			// counts by type
 			$s->types = $this->array_a_to_kv( $this->query_table( $select = 'type, count(*) as `count`', $where, $group_by = 'type', $type = 'results', $output = OBJECT_K ) );
+
+			// counts by format
+			$s->format = $this->array_a_to_kv( $this->query_table( $select = 'format, count(*) as `count`', $where, $group_by = 'format', $type = 'results', $output = OBJECT_K ) );
 
 			// counts by paragraphs
 			$s->start_with_lorem = $this->array_a_to_kv( $this->query_table( $select = 'start_with_lorem, count(*) as `count`', $where, $group_by = 'start_with_lorem', $type = 'results', $output = OBJECT_K ) );

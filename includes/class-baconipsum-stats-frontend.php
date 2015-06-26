@@ -51,6 +51,7 @@ if ( !class_exists( 'BaconIpsum_Stats_Frontend' ) ) {
 						<div id="pie-source" class="chart" style="width: 100%; height: 300px; display: none;"></div>
 						<div id="pie-type" class="chart" style="width: 100%; height: 300px; display: none;"></div>
 						<div id="pie-swl" class="chart" style="width: 100%; height: 300px; display: none;"></div>
+						<div id="pie-format" class="chart" style="width: 100%; height: 300px; display: none;"></div>
 						<div id="pie-paras" class="chart" style="width: 100%; height: 300px; display: none;"></div>
 
 
@@ -94,10 +95,6 @@ if ( !class_exists( 'BaconIpsum_Stats_Frontend' ) ) {
 							return;
 						}
 
-						if ( ! baconIpsumAPIResponse ) {
-							baconIpsumAPIResponse = response;
-						}
-
 						jQuery('.baconipsum-stats .chart').show();
 						jQuery('.baconipsum-stats .ajax-spinner').hide();
 
@@ -105,6 +102,9 @@ if ( !class_exists( 'BaconIpsum_Stats_Frontend' ) ) {
 						baconIpsumPopulateChart( response.chart_data.sources, 'Source', 'pie-source' );
 						baconIpsumPopulateChart( response.chart_data.paragraphs, 'Number of Paragraphs', 'pie-paras' );
 						baconIpsumPopulateChart( response.chart_data.start_with_lorem, 'Start With Lorem', 'pie-swl' );
+						baconIpsumPopulateChart( response.chart_data.format, 'Format', 'pie-format' );
+
+						baconIpsumAPIResponse = response;
 
 					}
 
