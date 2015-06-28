@@ -40,6 +40,16 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 				'callback'        => array( $this, 'get_params' ),
 			) );
 
+			register_rest_route( 'baconipsum', '/test-response', array(
+				'methods'         => WP_REST_Server::READABLE,
+				'callback'        => array( $this, 'test_response' ),
+				'args'            => array(
+					'format'      => array(
+							'default' => 'json',
+						),
+					),
+			) );
+
 		}
 
 
@@ -111,6 +121,13 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 		}
 
 
+		public function test_response( WP_REST_Request $request ) {
+			$data = new stdClass();
+			$data->my_text_data = 'The server time is ' . current_time( 'mysql' );
+			return rest_ensure_response( $data );
+		}
+
+
 		public function to_timestamp( $date ) {
 			return $this->validate_timestamp( strtotime( $date ) );
 		}
@@ -119,6 +136,7 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 		public function validate_timestamp( $timestamp ) {
 			return absint( $timestamp );
 		}
+
 
 
 
