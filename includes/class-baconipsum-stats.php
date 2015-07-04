@@ -75,7 +75,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			$wpdb->insert( $this->logging_table_name(),
 				array(
 					'added'                 => current_time( 'timestamp' ),
-					'added_date'            => current_time( 'mysql '),
+					'added_date'            => current_time( 'mysql' ),
 					'source'                => $args['source'],
 					'type'                  => $args['type'],
 					'format'                => $args['format'],
