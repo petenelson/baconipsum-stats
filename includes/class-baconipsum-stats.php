@@ -39,6 +39,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				$sql = "CREATE TABLE $table_name (
 				  id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
 				  added bigint(20) UNSIGNED NOT NULL,
+				  added_date datetime NULL,
 				  source varchar(20) NOT NULL,
 				  type varchar(50) NOT NULL,
 				  format varchar(20) NOT NULL,
@@ -73,22 +74,26 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 			$wpdb->insert( $this->logging_table_name(),
 				array(
-					'added' => current_time( 'timestamp' ),
-					'source' => $args['source'],
-					'type' => $args['type'],
-					'format' => $args['format'],
-					'start_with_lorem' => true === $args['start-with-lorem'] ? 1 : 0,
-					'number_of_paragraphs' => $args['number-of-paragraphs'] ,
-					'number_of_sentences' => $args['number-of-sentences'] ,
+					'added'                 => current_time( 'timestamp' ),
+					'added_date'            => current_time( 'mysql '),
+					'source'                => $args['source'],
+					'type'                  => $args['type'],
+					'format'                => $args['format'],
+					'start_with_lorem'      => true === $args['start-with-lorem'] ? 1 : 0,
+					'number_of_paragraphs'  => $args['number-of-paragraphs'] ,
+					'number_of_sentences'   => $args['number-of-sentences'] ,
+					'ip_address'            => $_SERVER['REMOTE_ADDR'],
 				),
 				array(
 					'%d',
 					'%s',
 					'%s',
 					'%s',
+					'%s',
 					'%d',
 					'%d',
 					'%d',
+					'%s',
 				)
 			);
 
