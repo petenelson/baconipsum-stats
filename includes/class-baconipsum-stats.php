@@ -6,7 +6,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 	class BaconIpsum_Stats {
 
-		protected static $version      = '2015-06-19-04';
+		protected static $version      = '2015-07-04-01';
 		protected static $plugin_name  = 'baconipsum-stats';
 
 		private $_queries = array();
@@ -45,7 +45,9 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				  start_with_lorem tinyint(1) UNSIGNED NOT NULL,
 				  number_of_paragraphs int(11) UNSIGNED NOT NULL,
 				  number_of_sentences int(11) UNSIGNED NOT NULL,
-				  PRIMARY KEY  (id)
+				  ip_address varchar(20) NULL
+				  PRIMARY KEY  (id),
+				  KEY ix_ip_address (ip_address)
 				) $charset_collate;";
 
 				require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
