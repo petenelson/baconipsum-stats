@@ -34,7 +34,7 @@ if ( class_exists( 'BaconIpsum_Stats_Frontend' ) ) {
 
 // reference https://github.com/WP-API/WP-API/blob/develop/lib/infrastructure/class-wp-rest-server.php
 // serve_request() function
-add_filter( 'rest_pre_serve_request', 'multiformat_rest_pre_serve_request', 10, 4 );
+// add_filter( 'rest_pre_serve_request', 'multiformat_rest_pre_serve_request', 10, 4 );
 
 function multiformat_rest_pre_serve_request( $served, $result, $request, $server ) {
 
