@@ -15,12 +15,12 @@ if ( !class_exists( 'BaconIpsum_Stats_API_Controller' ) ) {
 		public function register_routes() {
 
 			register_rest_route( 'baconipsum', '/stats', array(
-				'methods'         => array( WP_REST_Server::METHOD_GET, WP_REST_Server::METHOD_POST ),
+				'methods'         => array( 'GET', 'POST' ),
 				'callback'        => array( $this, 'get_stats' ),
 				'args'            => array(
 					'from'        => array(
 						'sanitize_callback'  => array( $this, 'to_timestamp' ),
-						'default'            => current_time( 'timestamp' ) - ( DAYS_IN_SECONDS * 30 ),
+						'default'            => current_time( 'timestamp' ) - ( DAY_IN_SECONDS * 30 ),
 					),
 					'to'          => array(
 						'sanitize_callback' => array( $this, 'to_timestamp' ),

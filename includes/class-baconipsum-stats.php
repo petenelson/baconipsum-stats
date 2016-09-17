@@ -121,15 +121,13 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			 ) );
 
 			// sanitize timestamps
-			if ( false ) {
-				$timestamps = $this->min_max_timestamps();
-				if ( $args['from'] < $timestamps->min_timestamp ) {
-					$args['from'] = $timestamps->min_timestamp;
-				}
+			$timestamps = $this->min_max_timestamps();
+			if ( $args['from'] < $timestamps->min_timestamp ) {
+				$args['from'] = $timestamps->min_timestamp;
+			}
 
-				if ( $args['to'] > $timestamps->max_timestamp || $args['to'] < $timestamps->min_timestamp ) {
-					//$args['to'] = $timestamps->max_timestamp;
-				}
+			if ( $args['to'] > $timestamps->max_timestamp || $args['to'] < $timestamps->min_timestamp ) {
+				$args['to'] = $timestamps->max_timestamp;
 			}
 
 			$args['to'] = $args['to'] + DAY_IN_SECONDS  - 1;
@@ -170,8 +168,8 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			// counts by paragraphs
 			$s->start_with_lorem = $this->array_a_to_kv( $this->query_table( $select = 'start_with_lorem, count(*) as `count`', $where, $group_by = 'start_with_lorem', $type = 'results', $output = OBJECT_K ) );
 
-			$s->start_with_lorem['Yes'] = absint( $s->start_with_lorem[0] );
-			$s->start_with_lorem['No'] = absint( $s->start_with_lorem[1] );
+			$s->start_with_lorem['Yes'] = absint( isset( $s->start_with_lorem[0] ) ? $s->start_with_lorem[0] : 0 );
+			$s->start_with_lorem['No'] = absint( isset( $s->start_with_lorem[1] ) ? $s->start_with_lorem[1] : 0 );
 
 			unset( $s->start_with_lorem[0] );
 			unset( $s->start_with_lorem[1] );
@@ -262,7 +260,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 
 		private function add_single_quotes( $value ) {
-			return "'" . $value . "'";
+			return "'" . esc_sql( $value ) . "'";
 		}
 
 
