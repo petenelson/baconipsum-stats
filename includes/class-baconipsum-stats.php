@@ -1,6 +1,5 @@
 <?php
 
-
 if ( ! defined( 'ABSPATH' ) ) die( 'restricted access' );
 
 if ( !class_exists( 'BaconIpsum_Stats' ) ) {
@@ -15,7 +14,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		public function plugins_loaded() {
 
 			add_action( 'admin_init', array( $this, 'create_tables' ) );
-			add_action( 'anyipsum-filler-generated', array( $this, 'log_anyipsum_generated' ) );
+			add_action( 'anyipsum-filler-generated', 'BaconIpsum_Stats::log_anyipsum_generated' );
 
 		}
 
@@ -63,17 +62,17 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
-		public function log_anyipsum_generated( $args ) {
+		static public function log_anyipsum_generated( $args ) {
 
 			global $wpdb;
 
-			$params = $this->get_params();
+			$params = self::get_params();
 			// don't log invalid data
 			if ( ! in_array( $args['source'], $params->sources ) || ! in_array( $args['type'], $params->types ) ) {
 				return;
 			}
 
-			$wpdb->insert( $this->logging_table_name(),
+			$r = $wpdb->insert( self::logging_table_name(),
 				array(
 					'added'                 => current_time( 'timestamp' ),
 					'added_date'            => current_time( 'mysql' ),
@@ -98,11 +97,10 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				)
 			);
 
-
 		}
 
 
-		public function get_params() {
+		static public function get_params() {
 			$p            = new stdClass();
 			$p->sources   = array( 'web', 'api' );
 			$p->types     = array( 'all-meat', 'meat-and-filler' );
@@ -217,7 +215,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
-		private function logging_table_name() {
+		static public function logging_table_name() {
 			global $wpdb;
 			return $wpdb->prefix . 'anyipsum_log';
 		}
@@ -226,7 +224,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		private function query_table( $select, $where, $group_by = '', $type = 'results', $output = OBJECT ) {
 
 			global $wpdb;
-			$table_name = $this->logging_table_name();
+			$table_name = self::logging_table_name();
 
 			if ( empty( $where ) ) {
 				$where = '1';
