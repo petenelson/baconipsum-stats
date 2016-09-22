@@ -16,6 +16,10 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			add_action( 'admin_init', array( $this, 'create_tables' ) );
 			add_action( 'anyipsum-filler-generated', 'BaconIpsum_Stats::log_anyipsum_generated' );
 
+			add_action( 'anyipsum-after-starts-with-row', 'BaconIpsum_Stats::display_spicy_jalapeno_row', 10, 3 );
+
+			add_filter( 'anyipsum-generated-filler', 'BaconIpsum_Stats::alter_generated_filler' );
+
 		}
 
 
@@ -263,6 +267,33 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			return "'" . esc_sql( $value ) . "'";
 		}
 
+
+		static public function display_spicy_jalapeno_row( $content, $type, $settings ) {
+			?>
+				<tr class="anyipsum-spicy">
+					<td class="anyipsum-left-cell"></td>
+					<td class="anyipsum-right-cell">
+						<input id="spicy-jalapeno" type="checkbox" name="make-it-spicy" value="1" <?php checked( self::is_spicy() ); ?> />
+						<label for="spicy-jalapeno"><?php _e( 'Make it spicy', 'any-ipsum' ); ?></label>
+					</td>
+				</tr>
+			<?php
+		}
+
+		static public function is_spicy() {
+			if ( class_exists( 'WPAnyIpsumCore' ) ) {
+				return '1' === WPAnyIpsumCore::get_request( 'make-it-spicy' );
+			}
+		}
+
+		static public function alter_generated_filler( $paragraphs ) {
+
+			if ( is_array( $paragraphs ) && ! empty( $paragraphs ) && self::is_spicy() ) {
+				$paragraphs[0] = 'Spicy jalapeno ' . lcfirst( $paragraphs[0] );
+			}
+
+			return $paragraphs;
+		}
 
 	}
 
