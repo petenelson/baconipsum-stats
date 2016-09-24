@@ -6,7 +6,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 	class BaconIpsum_Stats {
 
-		protected static $version      = '2015-07-04-01';
+		protected static $version      = '2016-09-17-01';
 		protected static $plugin_name  = 'baconipsum-stats';
 
 		private $_queries = array();
@@ -14,7 +14,11 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		public function plugins_loaded() {
 
 			add_action( 'admin_init', array( $this, 'create_tables' ) );
-			add_action( 'anyipsum-filler-generated', array( $this, 'log_anyipsum_generated' ) );
+			add_action( 'anyipsum-filler-generated', 'BaconIpsum_Stats::log_anyipsum_generated' );
+
+			add_action( 'anyipsum-after-starts-with-row', 'BaconIpsum_Stats::display_spicy_jalapeno_row', 10, 3 );
+
+			add_filter( 'anyipsum-generated-filler', 'BaconIpsum_Stats::alter_generated_filler' );
 
 		}
 
@@ -46,7 +50,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				  start_with_lorem tinyint(1) UNSIGNED NOT NULL,
 				  number_of_paragraphs int(11) UNSIGNED NOT NULL,
 				  number_of_sentences int(11) UNSIGNED NOT NULL,
-				  ip_address varchar(20) NULL
+				  ip_address varchar(20) NULL,
 				  PRIMARY KEY  (id),
 				  KEY ix_ip_address (ip_address)
 				) $charset_collate;";
@@ -62,17 +66,17 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
-		public function log_anyipsum_generated( $args ) {
+		static public function log_anyipsum_generated( $args ) {
 
 			global $wpdb;
 
-			$params = $this->get_params();
+			$params = self::get_params();
 			// don't log invalid data
 			if ( ! in_array( $args['source'], $params->sources ) || ! in_array( $args['type'], $params->types ) ) {
 				return;
 			}
 
-			$wpdb->insert( $this->logging_table_name(),
+			$r = $wpdb->insert( self::logging_table_name(),
 				array(
 					'added'                 => current_time( 'timestamp' ),
 					'added_date'            => current_time( 'mysql' ),
@@ -97,11 +101,10 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				)
 			);
 
-
 		}
 
 
-		public function get_params() {
+		static public function get_params() {
 			$p            = new stdClass();
 			$p->sources   = array( 'web', 'api' );
 			$p->types     = array( 'all-meat', 'meat-and-filler' );
@@ -122,15 +125,13 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			 ) );
 
 			// sanitize timestamps
-			if ( false ) {
-				$timestamps = $this->min_max_timestamps();
-				if ( $args['from'] < $timestamps->min_timestamp ) {
-					$args['from'] = $timestamps->min_timestamp;
-				}
+			$timestamps = $this->min_max_timestamps();
+			if ( $args['from'] < $timestamps->min_timestamp ) {
+				$args['from'] = $timestamps->min_timestamp;
+			}
 
-				if ( $args['to'] > $timestamps->max_timestamp || $args['to'] < $timestamps->min_timestamp ) {
-					//$args['to'] = $timestamps->max_timestamp;
-				}
+			if ( $args['to'] > $timestamps->max_timestamp || $args['to'] < $timestamps->min_timestamp ) {
+				$args['to'] = $timestamps->max_timestamp;
 			}
 
 			$args['to'] = $args['to'] + DAY_IN_SECONDS  - 1;
@@ -171,8 +172,8 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 			// counts by paragraphs
 			$s->start_with_lorem = $this->array_a_to_kv( $this->query_table( $select = 'start_with_lorem, count(*) as `count`', $where, $group_by = 'start_with_lorem', $type = 'results', $output = OBJECT_K ) );
 
-			$s->start_with_lorem['Yes'] = absint( $s->start_with_lorem[0] );
-			$s->start_with_lorem['No'] = absint( $s->start_with_lorem[1] );
+			$s->start_with_lorem['Yes'] = absint( isset( $s->start_with_lorem[0] ) ? $s->start_with_lorem[0] : 0 );
+			$s->start_with_lorem['No'] = absint( isset( $s->start_with_lorem[1] ) ? $s->start_with_lorem[1] : 0 );
 
 			unset( $s->start_with_lorem[0] );
 			unset( $s->start_with_lorem[1] );
@@ -216,7 +217,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		}
 
 
-		private function logging_table_name() {
+		static public function logging_table_name() {
 			global $wpdb;
 			return $wpdb->prefix . 'anyipsum_log';
 		}
@@ -225,7 +226,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		private function query_table( $select, $where, $group_by = '', $type = 'results', $output = OBJECT ) {
 
 			global $wpdb;
-			$table_name = $this->logging_table_name();
+			$table_name = self::logging_table_name();
 
 			if ( empty( $where ) ) {
 				$where = '1';
@@ -263,9 +264,36 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 
 		private function add_single_quotes( $value ) {
-			return "'" . $value . "'";
+			return "'" . esc_sql( $value ) . "'";
 		}
 
+
+		static public function display_spicy_jalapeno_row( $content, $type, $settings ) {
+			?>
+				<tr class="anyipsum-spicy">
+					<td class="anyipsum-left-cell"></td>
+					<td class="anyipsum-right-cell">
+						<input id="spicy-jalapeno" type="checkbox" name="make-it-spicy" value="1" <?php checked( self::is_spicy() ); ?> />
+						<label for="spicy-jalapeno"><?php _e( 'Make it spicy', 'any-ipsum' ); ?></label>
+					</td>
+				</tr>
+			<?php
+		}
+
+		static public function is_spicy() {
+			if ( class_exists( 'WPAnyIpsumCore' ) ) {
+				return '1' === WPAnyIpsumCore::get_request( 'make-it-spicy' );
+			}
+		}
+
+		static public function alter_generated_filler( $paragraphs ) {
+
+			if ( is_array( $paragraphs ) && ! empty( $paragraphs ) && self::is_spicy() ) {
+				$paragraphs[0] = 'Spicy jalapeno ' . lcfirst( $paragraphs[0] );
+			}
+
+			return $paragraphs;
+		}
 
 	}
 

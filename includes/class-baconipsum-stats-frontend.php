@@ -35,17 +35,19 @@ if ( !class_exists( 'BaconIpsum_Stats_Frontend' ) ) {
 
 			$html = '';
 
+			$spinner_url = plugin_dir_url(  dirname( __FILE__ ) ) . 'public/ajax-spinner.gif';
+
 			ob_start();
 			?>
 
 				<div class="baconipsum-stats">
-					<form class="baconipsum-stats-form" method="post" action="<?php echo site_url( '/wp-json/baconipsum/stats' ); ?>">
+					<form class="baconipsum-stats-form" method="post" action="<?php echo esc_url( site_url( '/wp-json/baconipsum/stats' ) ); ?>">
 
-						From: <input style="width: 7em;" type="text" name="from" class="date-from datepicker" value="<?php echo date( 'm/d/Y', $javascript_data->from ); ?>" />
-						To: <input style="width: 7em;" type="text" name="to" class="date-to datepicker" value="<?php echo date( 'm/d/Y', $javascript_data->to ); ?>" />
+						From: <input style="width: 7em;" type="text" name="from" class="date-from datepicker" value="<?php echo esc_attr( date( 'm/d/Y', $javascript_data->from ) ); ?>" />
+						To: <input style="width: 7em;" type="text" name="to" class="date-to datepicker" value="<?php echo esc_attr( date( 'm/d/Y', $javascript_data->to ) ); ?>" />
 
 						<input type="submit" value="Go" />
-						<img class="ajax-spinner" style="display: none;" src="<?php echo plugin_dir_url(  dirname( __FILE__ ) ) ?>public/ajax-spinner.gif" />
+						<img class="ajax-spinner" style="display: none;" src="<?php echo esc_url( $spinner_url ); ?>" />
 
 						<p class="chart chart-total"></p>
 
