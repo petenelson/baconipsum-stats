@@ -6,7 +6,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 	class BaconIpsum_Stats {
 
-		protected static $version      = '2016-09-17-01';
+		protected static $version      = '2016-11-17-01';
 		protected static $plugin_name  = 'baconipsum-stats';
 
 		private $_queries = array();
@@ -51,6 +51,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 				  number_of_paragraphs int(11) UNSIGNED NOT NULL,
 				  number_of_sentences int(11) UNSIGNED NOT NULL,
 				  ip_address varchar(20) NULL,
+				  error varchar(250) NULL,
 				  PRIMARY KEY  (id),
 				  KEY ix_ip_address (ip_address)
 				) $charset_collate;";
@@ -87,6 +88,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 					'number_of_paragraphs'  => $args['number-of-paragraphs'] ,
 					'number_of_sentences'   => $args['number-of-sentences'] ,
 					'ip_address'            => $_SERVER['REMOTE_ADDR'],
+					'error'                 => ( ! empty( $args['error'] ) ? trim( $args['error'] ) : '' ),
 				),
 				array(
 					'%d',
@@ -98,6 +100,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 					'%d',
 					'%d',
 					'%s',
+					'%s',
 				)
 			);
 
@@ -106,7 +109,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 
 		static public function get_params() {
 			$p            = new stdClass();
-			$p->sources   = array( 'web', 'api' );
+			$p->sources   = array( 'web', 'api', 'cli', 'sms' );
 			$p->types     = array( 'all-meat', 'meat-and-filler' );
 			return $p;
 		}
