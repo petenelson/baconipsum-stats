@@ -14,7 +14,7 @@ if ( !class_exists( 'BaconIpsum_Stats' ) ) {
 		public function plugins_loaded() {
 
 			add_action( 'admin_init', array( $this, 'create_tables' ) );
-			add_action( 'anyipsum-filler-generated', 'BaconIpsum_Stats::log_anyipsum_generated' );
+			// add_action( 'anyipsum-filler-generated', 'BaconIpsum_Stats::log_anyipsum_generated' );
 
 			add_action( 'anyipsum-after-starts-with-row', 'BaconIpsum_Stats::display_spicy_jalapeno_row', 10, 3 );
 
