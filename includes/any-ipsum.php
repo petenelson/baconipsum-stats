@@ -23,8 +23,9 @@ function n( $function ) {
  */
 function setup() {
 	add_action( 'plugins_loaded', n( 'remove_emoji_actions' ),  20 );
-	// TODO add_filter( 'anyipsum-generated-filler', 'BaconIpsum_Stats::alter_generated_filler' );
 	add_action( 'anyipsum-filler-generated', n( 'log_anyipsum_generated' ) );
+	add_action( 'anyipsum-after-starts-with-row', n( 'display_spicy_jalapeno_row' ) );
+	add_filter( 'anyipsum-generated-filler', n( 'alter_generated_filler' ) );
 }
 
 /**
@@ -100,4 +101,49 @@ function get_valid_params() {
 	];
 
 	return $params;
+}
+
+/**
+ * Displays the spice jalapeno option.
+ *
+ * @return void
+ */
+function display_spicy_jalapeno_row() {
+	?>
+		<tr class="anyipsum-spicy">
+			<td class="anyipsum-left-cell"></td>
+			<td class="anyipsum-right-cell">
+				<input id="spicy-jalapeno" type="checkbox" name="make-it-spicy" value="1" <?php checked( is_spicy() ); ?> />
+				<label for="spicy-jalapeno"><?php esc_html_e( 'Make it spicy', 'any-ipsum' ); ?></label>
+			</td>
+		</tr>
+	<?php
+}
+
+/**
+ * Determines if spice is enabled.
+ *
+ * @return boolean
+ */
+function is_spicy() {
+	if ( class_exists( '\WPAnyIpsumCore' ) ) {
+		return '1' === \WPAnyIpsumCore::get_request( 'make-it-spicy' );
+	} else {
+		return false;
+	}
+}
+
+/**
+ * Adds Spicy Jalapeno to generated filler.
+ *
+ * @param  array $paragraphs List of paragraphs.
+ * @return array
+ */
+function alter_generated_filler( $paragraphs ) {
+
+	if ( is_array( $paragraphs ) && ! empty( $paragraphs ) && is_spicy() ) {
+		$paragraphs[0] = 'Spicy jalapeno ' . lcfirst( $paragraphs[0] );
+	}
+
+	return $paragraphs;
 }
