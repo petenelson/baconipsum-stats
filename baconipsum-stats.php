@@ -17,8 +17,8 @@ define( 'BACON_IPSUM_STATS_VERSION', '1.1.1' );
 
 // Include files and run setup hooks.
 $files = [
-	'includes/logging.php'   => 'Logging\setup',
-	'includes/any-ipsum.php' => 'AnyIpsum\setup',
+	'includes/elasticsearch.php' => 'Elasticsearch\setup',
+	'includes/any-ipsum.php'     => 'AnyIpsum\setup',
 ];
 
 foreach ( $files as $file => $setup ) {

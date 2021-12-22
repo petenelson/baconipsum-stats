@@ -1,11 +1,11 @@
 <?php
 /**
- * Bacon Ipsum Stats Logging
+ * Bacon Ipsum Elasticsearch integration
  *
  * @package BaconIpsum\Stats
  */
 
-namespace BaconIpsum\Stats\Logging;
+namespace BaconIpsum\Stats\Elasticsearch;
 
 /**
  * Quickly provide a namespaced way to get functions.
@@ -22,7 +22,17 @@ function n( $function ) {
  * @return void
  */
 function setup() {
-	// add_action( 'admin_init', n( 'put_es_mapping' ) );
+	add_action( 'admin_init', n( 'maybe_create_mapping' ) );
+	add_action( 'admin_action_delete_baconipsum_stats_index', n( 'maybe_delete_index' ) );
+}
+
+/**
+ * Gets the cache group ID.
+ *
+ * @return string
+ */
+function get_cache_group() {
+	return 'baconipsum_stats';
 }
 
 /**
@@ -33,6 +43,15 @@ function setup() {
  * @return array
  */
 function es_request( $method = 'POST', $args = [] ) {
+
+	$args = wp_parse_args(
+		$args,
+		[
+			'async'    => false, // TODO implement async.
+			'body'     => false,
+			'endpoint' => false,
+		]
+	);
 
 	$results = [
 		'success'       => false,
@@ -50,7 +69,11 @@ function es_request( $method = 'POST', $args = [] ) {
 		return $results;
 	}
 
-	$index_url = trailingslashit( BACON_IPSUM_STATS_ES_HOST ) . $index_name;
+	$index_url = get_index_url();
+
+	if ( ! empty( $args['endpoint'] ) ) {
+		$index_url = trailingslashit( $index_url ) . $args['endpoint'];
+	}
 
 	$results['index_url'] = $index_url;
 
@@ -65,7 +88,7 @@ function es_request( $method = 'POST', $args = [] ) {
 		$wp_remote_args['headers']['Authorization'] = 'Basic ' . base64_encode( ES_SHIELD );
 	}
 
-	if ( isset( $args['body'] ) ) {
+	if ( ! empty( $args['body'] ) ) {
 		$wp_remote_args['body'] = $args['body'];
 	}
 
@@ -105,12 +128,44 @@ function get_index_name( $blog_id = null ) {
 }
 
 /**
+ * Gets the Elasticsearch stats index URL.
+ *
+ * @param  int $blog_id `null` means current blog.
+ * @return string
+ */
+function get_index_url( $blog_id = null ) {
+
+	if ( ! defined( 'BACON_IPSUM_STATS_ES_HOST' ) ) {
+		return false;
+	}
+
+	$index_name = get_index_name( $blog_id );
+	if ( empty( $index_name ) ) {
+		return false;
+	}
+
+	$index_url = trailingslashit( BACON_IPSUM_STATS_ES_HOST ) . $index_name;
+
+	return $index_url;
+}
+
+/**
  * Deletes the mapping in Elasticsearch.
  *
  * @return array
  */
 function delete_es_mapping() {
+
+	$index_url = get_index_url();
+
+	if ( empty( $index_url ) ) {
+		return;
+	}
+
 	$results = es_request( 'DELETE' );
+
+	wp_cache_delete( 'index_exists_' . md5( $index_url ), get_cache_group() );
+
 	return $results;
 }
 
@@ -130,5 +185,61 @@ function put_es_mapping( $delete_mapping = true ) {
 
 	$results = es_request( 'PUT', $args );
 
-	var_dump( $results ); die();
+	return $results;
+}
+
+/**
+ * Creates the mapping if it doesn't exist.
+ *
+ * @return void
+ */
+function maybe_create_mapping() {
+	if ( ! index_exists() ) {
+		put_es_mapping();
+	}
+}
+
+/**
+ * Determines if the index exists.
+ *
+ * @return void
+ */
+function index_exists() {
+
+	$index_url = get_index_url();
+
+	if ( empty( $index_url ) ) {
+		return false;
+	}
+
+	$cache_key     = 'index_exists_' . md5( $index_url );
+	$cached_exists = wp_cache_get( $cache_key, get_cache_group() );
+
+	if ( false !== $cached_exists ) {
+		return true;
+	}
+
+	// Call ES to see if it exists.
+	$results = es_request( 'GET' );
+
+	if ( 200 === $results['response_code'] ) {
+		wp_cache_set( $cache_key, 'true', get_cache_group(), MINUTE_IN_SECONDS * 5 );
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
+ * Deletes the index if the user has the right permissions.
+ *
+ * @return void
+ */
+function maybe_delete_index() {
+
+	if ( current_user_can( 'manage_options' ) ) {
+		delete_es_mapping();
+		wp_safe_redirect( admin_url() );
+		exit;
+	}
 }

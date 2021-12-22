@@ -1,8 +1,38 @@
 {
 	"mappings": {
 		"properties": {
-			"field1": {
+			"timestamp": {
+				"type": "date"
+			},
+			"date": {
+				"type": "date"
+			},
+			"source": {
+				"type": "keyword"
+			},
+			"type": {
+				"type": "keyword"
+			},
+			"format": {
+				"type": "keyword"
+			},
+			"start_with_lorem": {
+				"type": "boolean"
+			},
+			"number_of_paragraphs": {
+				"type": "integer"
+			},
+			"number_of_sentences": {
+				"type": "integer"
+			},
+			"bytes": {
+				"type": "integer"
+			},
+			"error": {
 				"type": "text"
+			},
+			"ip_address": {
+				"type": "ip"
 			}
 		}
 	}
