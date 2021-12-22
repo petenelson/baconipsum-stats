@@ -47,7 +47,11 @@ function log_anyipsum_generated( $args ) {
 
 	$params = get_valid_params();
 	if ( ! in_array( $args['source'], $params['sources'] ) || ! in_array( $args['type'], $params['types'] ) || ! in_array( $args['format'], $params['formats'] ) ) {
-		die('sdfgsfg');
+		return;
+	}
+
+	$logging_enabled = 1 === absint( get_option( 'baconipsum_stats_logging_enabled' ) );
+	if ( ! $logging_enabled ) {
 		return;
 	}
 
@@ -74,7 +78,7 @@ function log_anyipsum_generated( $args ) {
 	];
 
 	$args = [
-		'async'    => true,
+		'blocking' => false,
 		'body'     => wp_json_encode( $body ),
 		'endpoint' => '_doc'
 	];

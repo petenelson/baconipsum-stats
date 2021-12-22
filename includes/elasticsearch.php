@@ -47,7 +47,7 @@ function es_request( $method = 'POST', $args = [] ) {
 	$args = wp_parse_args(
 		$args,
 		[
-			'async'    => false, // TODO implement async.
+			'blocking' => true, // Pass false to run async requests.
 			'body'     => false,
 			'endpoint' => false,
 		]
@@ -78,8 +78,9 @@ function es_request( $method = 'POST', $args = [] ) {
 	$results['index_url'] = $index_url;
 
 	$wp_remote_args = [
-		'method'  => $method,
-		'headers' => [
+		'method'   => $method,
+		'blocking' => $args['blocking'],
+		'headers'  => [
 			'Content-Type' => 'application/json',
 		],
 	];
