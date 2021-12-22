@@ -56,6 +56,9 @@ function log_anyipsum_generated( $args ) {
 		return;
 	}
 
+	// Make sure the mapping exists.
+	\BaconIpsum\Stats\Elasticsearch\maybe_create_mapping();
+
 	$server = filter_var_array(
 		$_SERVER, // phpcs:ignore
 		[
