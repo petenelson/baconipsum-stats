@@ -6,6 +6,7 @@
  */
 
 namespace BaconIpsum\Stats\AnyIpsum;
+use function BaconIpsum\Stats\Elasticsearch\es_request;
 
 /**
  * Quickly provide a namespaced way to get functions.
@@ -26,6 +27,7 @@ function setup() {
 	add_action( 'anyipsum-filler-generated', n( 'log_anyipsum_generated' ) );
 	add_action( 'anyipsum-after-starts-with-row', n( 'display_spicy_jalapeno_row' ) );
 	add_filter( 'anyipsum-generated-filler', n( 'alter_generated_filler' ) );
+	add_action( 'admin_init', n( 'get_24hr_source_aggregate' ) );
 }
 
 /**
@@ -87,7 +89,7 @@ function log_anyipsum_generated( $args ) {
 		'endpoint' => '_doc'
 	];
 
-	$results = \BaconIpsum\Stats\Elasticsearch\es_request( 'POST', $args );
+	$results = es_request( 'POST', $args );
 }
 
 /**
@@ -149,4 +151,37 @@ function alter_generated_filler( $paragraphs ) {
 	}
 
 	return $paragraphs;
+}
+
+/**
+ * Gets a list of source aggregate counts for the pas 24hrs,
+ *
+ *
+ * @return array
+ */
+function get_24hr_source_aggregate() {
+
+	$args = [
+		'body'     => file_get_contents( BACON_IPSUM_STATS_PATH . 'includes/queries/24hr-source-aggregate.json' ),
+		'endpoint' => '_search'
+	];
+
+	$results = es_request( 'POST', $args );
+
+	$data = [
+		'sources' => [],
+	];
+
+	if ( 200 === $results['response_code'] ) {
+		$query_results = json_decode( $results['body'], true );
+
+		if ( is_array( $query_results ) && isset( $query_results['aggregations'], $query_results['aggregations']['by_source'], $query_results['aggregations']['by_source']['buckets'] ) ) {
+
+			foreach ( $query_results['aggregations']['by_source']['buckets'] as $bucket ) {
+				$data['sources'][ $bucket['key'] ] = $bucket['doc_count'];
+			}
+		}
+	}
+
+	return $data;
 }

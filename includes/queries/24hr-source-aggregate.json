@@ -1,0 +1,18 @@
+{
+	"size": 0,
+	"query": {
+		"range": {
+			"date": {
+				"gte": "now-24h",
+				"lte": "now"
+			}
+		}
+	},
+	"aggs": {
+		"by_source": {
+			"terms": {
+				"field": "source"
+			}
+		}
+	}
+}

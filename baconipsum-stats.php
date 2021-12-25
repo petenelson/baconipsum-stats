@@ -19,9 +19,17 @@ define( 'BACON_IPSUM_STATS_VERSION', '1.1.1' );
 $files = [
 	'includes/elasticsearch.php' => 'Elasticsearch\setup',
 	'includes/any-ipsum.php'     => 'AnyIpsum\setup',
+	'includes/widgets.php'       => 'Widgets\setup',
 ];
 
 foreach ( $files as $file => $setup ) {
+
+	$file = BACON_IPSUM_STATS_PATH . $file;
+
+	if ( ! file_exists( $file ) ) {
+		wp_die( esc_html( $file . ' does not exist.' ), 'File No Found' );
+	}
+
 	require_once $file;
 	if ( ! empty( $setup ) ) {
 		call_user_func( "\\BaconIpsum\\Stats\\$setup" );
